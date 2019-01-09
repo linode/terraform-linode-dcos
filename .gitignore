@@ -1,0 +1,7 @@
+.terraform
+terraform.tfvars
+terraform.auto.tfvars
+linode-key
+linode-key.pub
+terraform.tfstate*
+.terraform.tfstate*
