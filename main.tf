@@ -1,9 +1,14 @@
+//
+//  BOOTSTRAP NODE
+//
 resource "linode_instance" "bootstrap" {
   type            = "${var.instance_type}"
   region          = "${var.region}"
   image           = "${var.instance_image}"
   private_ip      = "true"
   authorized_keys = ["${chomp(file(var.ssh_public_key))}"]
+  label           = "dcos_bootstrap"
+  tags            = ["dcos", "bootstrap"]
 }
 
 module "dcos-bootstrap" {
@@ -44,6 +49,9 @@ resource "null_resource" "bootstrap" {
   }
 }
 
+//
+//  PUBLIC AGENT NODES
+//
 resource "linode_instance" "agent_public" {
   type            = "${var.instance_type}"
   region          = "${var.region}"
@@ -51,6 +59,8 @@ resource "linode_instance" "agent_public" {
   private_ip      = "true"
   authorized_keys = ["${chomp(file(var.ssh_public_key))}"]
   count           = "${var.num_of_public_agents}"
+  label           = "dcos_agent_public_${count.index}"
+  tags            = ["dcos", "agent_public"]
 }
 
 module "dcos-mesos-agent-public" {
@@ -98,6 +108,9 @@ resource "null_resource" "agent" {
   }
 }
 
+//
+//  MASTER NODES
+//
 resource "linode_instance" "master" {
   type            = "${var.instance_type}"
   region          = "${var.region}"
@@ -105,6 +118,8 @@ resource "linode_instance" "master" {
   private_ip      = "true"
   authorized_keys = ["${chomp(file(var.ssh_public_key))}"]
   count           = "${var.num_of_masters}"
+  label           = "dcos_master_${count.index}"
+  tags            = ["dcos", "master"]
 }
 
 # Create DCOS Mesos Master Scripts to execute
