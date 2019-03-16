@@ -14,8 +14,9 @@ variable "instance_type" {
   default = "g6-standard-2"
 }
 
+// https://docs.mesosphere.com/version-policy/
 variable "instance_image" {
-  default = "linode/ubuntu18.04"
+  default = "linode/centos7"
 }
 
 variable "num_of_public_agents" {
