@@ -16,7 +16,7 @@ variable "instance_type" {
 
 // https://docs.mesosphere.com/version-policy/
 variable "instance_image" {
-  default = "linode/centos7"
+  default = "linode/containerlinux"
 }
 
 variable "num_of_public_agents" {
@@ -35,4 +35,9 @@ variable "ssh_public_key" {
   type        = "string"
   default     = "~/.ssh/id_rsa.pub"
   description = "The path to your public key"
+}
+
+variable "ssh_user" {
+  type    = "string"
+  default = "core"
 }

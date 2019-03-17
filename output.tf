@@ -1,3 +1,3 @@
 output "master_public_ips" {
-  value = "${concat(linode_instance.master.*.ip_address)}"
+  value = "${concat(module.nodes_master.ip_address)}"
 }
