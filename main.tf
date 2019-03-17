@@ -14,6 +14,17 @@ module "node_bootstrap" {
   // tags            = ["dcos", "bootstrap"]
 }
 
+locals {
+  detect_ip = <<EOS
+#!/bin/sh
+ip -4 -o a show dev eth0 | awk '/\ 192.168/ {split($4,a,"/"); print a[1] }'
+EOS
+  detect_ip_public = <<EOS
+#!/bin/sh
+ip -4 -o a show dev eth0 | awk '! /\ 192.168/ {split($4,a,"/"); print a[1] }'
+EOS
+}
+
 module "dcos-bootstrap" {
   source                         = "dcos-terraform/dcos-core/template"
   bootstrap_private_ip           = "${module.node_bootstrap.private_ip_address[0]}"
@@ -26,21 +37,12 @@ module "dcos-bootstrap" {
   dcos_exhibitor_storage_backend = "static"
   dcos_cluster_name              = "${terraform.workspace}"
 
-  dcos_ip_detect_contents = <<EOS
-ip -4 -o a show dev eth0 | awk '/\ 192.168/ {split($4,a,"/"); print a[1] }'
-EOS
-
-  dcos_ip_detect_public_contents = <<EOS
-ip -4 -o a show dev eth0 | awk '! /\ 192.168/ {split($4,a,"/"); print a[1] }'
-EOS
-
   role = "dcos-bootstrap"
 }
 
 resource "null_resource" "bootstrap" {
   triggers {
     cluster_instance_ids = "${module.node_bootstrap.id[0]}"
-    bootstrap_ip         = "${module.node_bootstrap.ip_address[0]}"
     dcos_version         = "${var.dcos_version}"
     num_of_masters       = "${var.num_of_masters}"
   }
@@ -48,6 +50,16 @@ resource "null_resource" "bootstrap" {
   connection {
     host = "${module.node_bootstrap.ip_address[0]}"
     user = "${var.ssh_user}"
+  }
+
+  provisioner "file" {
+     content = "${local.detect_ip}"
+     destination = "/tmp/ip-detect"
+  }
+
+  provisioner "file" {
+     content = "${local.detect_ip_public}"
+     destination = "/tmp/ip-detect-public"
   }
 
   # Generate and upload bootstrap script to node
