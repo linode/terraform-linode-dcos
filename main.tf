@@ -9,8 +9,8 @@ data "template_file" "config" {
 
   vars {
     cluster_name = "${var.dcos_cluster_name}"
-    bootstrap    = "${linode_instance.dcos_bootstrap.ip_address}"
-    master_ips   = "${jsonencode(linode_instance.dcos_master.*.ip_address)}"
+    bootstrap    = "${linode_instance.dcos_bootstrap.private_ip_address}"
+    master_ips   = "${jsonencode(linode_instance.dcos_master.*.private_ip_address)}"
   }
 }
 
@@ -18,7 +18,7 @@ data "template_file" "installer" {
   template = "${file("${path.module}/installer.sh.tpl")}"
 
   vars {
-    bootstrap = "${linode_instance.dcos_bootstrap.ip_address}"
+    bootstrap = "${linode_instance.dcos_bootstrap.private_ip_address}"
   }
 }
 
