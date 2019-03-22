@@ -23,6 +23,10 @@ variable "num_of_public_agents" {
   default = "3"
 }
 
+variable "num_of_private_agents" {
+  default = "3"
+}
+
 variable "dcos_skip_checks" {
   default = "false"
 }

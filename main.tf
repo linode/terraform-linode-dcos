@@ -29,6 +29,7 @@ module "dcos-bootstrap" {
   source                         = "dcos-terraform/dcos-core/template"
   bootstrap_private_ip           = "${module.node_bootstrap.private_ip_address[0]}"
   dcos_public_agent_list         = "\n - ${join("\n - ", module.nodes_agent_public.private_ip_address)}"
+  dcos_agent_list         = "\n - ${join("\n - ", module.nodes_agent_private.private_ip_address)}"
   dcos_master_list               = "\n - ${join("\n - ", module.nodes_master.private_ip_address)}"
   dcos_install_mode              = "${var.state}"
   dcos_version                   = "${var.dcos_version}"
@@ -136,6 +137,64 @@ resource "null_resource" "agent" {
   }
 }
 
+//
+//  PRIVATE AGENT NODES
+//
+module "nodes_agent_private" {
+  source         = "./modules/instances"
+  node_type      = "${var.instance_type}"
+  region         = "${var.region}"
+  private_ip     = "true"
+  ssh_public_key = "${var.ssh_public_key}"
+  node_count     = "${var.num_of_private_agents}"
+  label_prefix   = "dcos"
+  node_class     = "agent_private"
+}
+
+module "dcos-mesos-agent-private" {
+  source               = "dcos-terraform/dcos-core/template"
+  bootstrap_private_ip = "${module.node_bootstrap.private_ip_address[0]}"
+  dcos_install_mode    = "${var.state}"
+  dcos_version         = "${var.dcos_version}"
+  dcos_skip_checks     = "${var.dcos_skip_checks}"
+  role                 = "dcos-mesos-agent"
+}
+
+# Execute generated script on agent
+resource "null_resource" "agent_private" {
+  triggers {
+    cluster_instance_ids       = "${null_resource.bootstrap.id}"
+    current_linode_instance_id = "${module.nodes_agent_private.id[count.index]}"
+  }
+
+  connection {
+    host = "${element(module.nodes_agent_private.ip_address, count.index)}"
+    user = "${var.ssh_user}"
+  }
+
+  count = "${var.num_of_private_agents}"
+
+  # Generate and upload Agent script to node
+  provisioner "file" {
+    content     = "${module.dcos-mesos-agent-private.script}"
+    destination = "run.sh"
+  }
+
+  # Wait for bootstrapnode to be ready
+  provisioner "remote-exec" {
+    inline = [
+      "until $(curl --output /dev/null --silent --head --fail http://${module.node_bootstrap.private_ip_address[0]}/dcos_install.sh); do printf 'waiting for bootstrap node to serve...'; sleep 20; done",
+    ]
+  }
+
+  # Install Slave Node
+  provisioner "remote-exec" {
+    inline = [
+      "sudo chmod +x run.sh",
+      "sudo ./run.sh",
+    ]
+  }
+}
 //
 //  MASTER NODES
 //
