@@ -4,4 +4,4 @@ This Terraform module installs DC/OS on Linode Cloud infrastructure using the [U
 
 This is a Work-In-Progress and may not be very usable.
 
-
+See the examples/ directory for instructions on running this and a demonstrative workload.
