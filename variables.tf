@@ -1,38 +1,50 @@
 variable "dcos_version" {
-  default = "1.12.2"
+  description = "Specifies which DC/OS version instruction to use"
+  default     = "1.12.2"
 }
 
 variable "state" {
-  default = "install"
+  description = "Type of command to execute. Options: install or upgrade"
+  default     = "install"
 }
 
 variable "region" {
-  default = "us-east"
+  description = "Linode region where the cluster will be deployed"
+  default     = "us-east"
 }
 
 variable "instance_type" {
-  default = "g6-standard-2"
+  description = "Linode instance type (defines RAM, CPU, Disk)"
+  default     = "g6-standard-6"
 }
 
 // https://docs.mesosphere.com/version-policy/
 variable "instance_image" {
-  default = "linode/containerlinux"
+  description = "Linode image to deploy (only tested with: linode/containerlinux)"
+  default     = "linode/containerlinux"
 }
 
 variable "num_of_public_agents" {
-  default = "3"
+  // https://docs.mesosphere.com/1.12/overview/architecture/node-types/
+  description = "Number of Public Agents to deploy"
+  default     = "1"
 }
 
 variable "num_of_private_agents" {
-  default = "3"
+  // https://docs.mesosphere.com/1.12/overview/architecture/node-types/
+  description = "Number of Private Agents to deploy"
+  default     = "3"
 }
 
 variable "dcos_skip_checks" {
-  default = "false"
+  description = "Used to skip all dcos checks that may block an upgrade if any DC/OS component is unhealthly"
+  default     = "false"
 }
 
 variable "num_of_masters" {
-  default = "3"
+  // https://docs.mesosphere.com/1.12/overview/architecture/node-types/
+  description = "Number of Master Nodes to deploy"
+  default     = "3"
 }
 
 variable "ssh_public_key" {
@@ -42,6 +54,7 @@ variable "ssh_public_key" {
 }
 
 variable "ssh_user" {
-  type    = "string"
-  default = "core"
+  type        = "string"
+  default     = "core"
+  description = "The user account to use in SSH commands to the Linode"
 }

@@ -19,6 +19,7 @@ locals {
 #!/bin/sh
 ip -4 -o a show dev eth0 | awk '/\ 192.168/ {split($4,a,"/"); print a[1] }'
 EOS
+
   detect_ip_public = <<EOS
 #!/bin/sh
 ip -4 -o a show dev eth0 | awk '! /\ 192.168/ {split($4,a,"/"); print a[1] }'
@@ -29,7 +30,7 @@ module "dcos-bootstrap" {
   source                         = "dcos-terraform/dcos-core/template"
   bootstrap_private_ip           = "${module.node_bootstrap.private_ip_address[0]}"
   dcos_public_agent_list         = "\n - ${join("\n - ", module.nodes_agent_public.private_ip_address)}"
-  dcos_agent_list         = "\n - ${join("\n - ", module.nodes_agent_private.private_ip_address)}"
+  dcos_agent_list                = "\n - ${join("\n - ", module.nodes_agent_private.private_ip_address)}"
   dcos_master_list               = "\n - ${join("\n - ", module.nodes_master.private_ip_address)}"
   dcos_install_mode              = "${var.state}"
   dcos_version                   = "${var.dcos_version}"
@@ -54,13 +55,13 @@ resource "null_resource" "bootstrap" {
   }
 
   provisioner "file" {
-     content = "${local.detect_ip}"
-     destination = "/tmp/ip-detect"
+    content     = "${local.detect_ip}"
+    destination = "/tmp/ip-detect"
   }
 
   provisioner "file" {
-     content = "${local.detect_ip_public}"
-     destination = "/tmp/ip-detect-public"
+    content     = "${local.detect_ip_public}"
+    destination = "/tmp/ip-detect-public"
   }
 
   # Generate and upload bootstrap script to node
@@ -195,6 +196,7 @@ resource "null_resource" "agent_private" {
     ]
   }
 }
+
 //
 //  MASTER NODES
 //
